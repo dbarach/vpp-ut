@@ -1,0 +1,11 @@
+# set up the "left" namespace
+
+ip netns add left
+ip link add fromleftvpp type veth peer name toleftvpp
+ip link set toleftvpp netns left
+ip netns exec left ip link set lo up
+ip netns exec left ip link set toleftvpp up
+ip netns exec left ip addr add 192.168.4.2/24 dev toleftvpp
+ip netns exec left route add -net 0.0.0.0/0 gw 192.168.4.1
+ip link set fromleftvpp up
+

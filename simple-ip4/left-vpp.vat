@@ -1,0 +1,11 @@
+tap_connect tapname leftvpptrunk random-mac
+comment { to here... cant create af_packet interfaces yet}
+create host-interface name fromleftvpp
+set int ip address host-fromleftvpp 192.168.4.1/24
+set int state host-fromleftvpp up
+
+set int ip address tap-0 192.168.6.1/24
+set int state tap-0 up
+
+ip probe-neighbor 192.168.6.2 tap-0 retry 20
+ip route add 192.168.5.0/24 via 192.168.6.2

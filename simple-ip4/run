@@ -1,0 +1,3 @@
+#!/bin/bash
+
+exec `dirname $0`/../shared/ut4 simple-ip4

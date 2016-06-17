@@ -1,0 +1,8 @@
+unix {
+     interactive
+     cli-listen localhost:5006
+}
+
+api-segment {
+     prefix right
+}

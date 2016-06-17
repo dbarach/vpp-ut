@@ -1,0 +1,64 @@
+#!/bin/bash
+# usage: ut4 <setup-name>
+# where <setup-name> is a subdir of $REPO
+
+if [ $EUID != "0" ] ; then
+    echo "Please re-run as root"
+fi
+
+set -x
+
+: REPO=${REPO:=/home/dbarach/dave-repo/vpp-ut4}
+: XTA=${XTA:='-fg black -bg wheat -ms black -cr black -fn 9x15'}
+: VPP=${VPP:=$PWD/install-vpp_lite_debug-native/vpp/bin/vpp}
+: VAT=${VAT:=$PWD/install-vpp_lite_debug-native/vpp-api-test/bin/vpp_api_test}
+
+# Create left host-side af_packet interface
+source $REPO/$1/left-namespace-setup
+
+# Create right host-side af_packet interface
+source $REPO/$1/right-namespace-setup
+
+# left vpp
+rm /dev/shm/left-*
+(xterm $XTA -T LEFT-VPP -n LEFT-VPP \
+      -e "$VPP -c $REPO/shared/left-vpp.cmdline"; ip netns del left)&
+
+# right vpp
+rm /dev/shm/right-*
+(xterm $XTA -T RIGHT-VPP -n RIGHT-VPP \
+      -e "$VPP -c $REPO/shared/right-vpp.cmdline"; ip netns del right; ifconfig trunk down;brctl delbr trunk)&
+
+# Wait for vpp to start
+sleep 1
+
+# configure left vpp (debug CLI)
+echo exec $REPO/$1/left-vpp.cli | nc localhost 5005 &
+
+# configure left vpp (vpp api test)
+# $VAT chroot prefix left in left-vpp.vat script
+
+# configure left vpp
+echo exec $REPO/$1/right-vpp.cli | nc localhost 5006 &
+
+# configure right vpp (vpp api test)
+# $VAT chroot prefix right in right-vpp.vat script
+
+# Set up bridge between vpp's
+sleep 3
+echo Set up the inter-vpp bridge...
+brctl addbr trunk
+brctl addif trunk leftvpptrunk
+brctl addif trunk rightvpptrunk
+ifconfig trunk up
+
+
+
+
+
+
+
+
+
+
+
