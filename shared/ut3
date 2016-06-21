@@ -1,0 +1,39 @@
+#!/bin/bash
+# usage: ut3 <setup-name>
+# where <setup-name> is a subdir of $REPO
+
+if [ $EUID != "0" ] ; then
+    echo "Please re-run as root"
+fi
+
+set -x
+
+: REPO=${REPO:=/home/dbarach/dave-repo/vpp-ut4}
+: XTA=${XTA:='-fg black -bg wheat -ms black -cr black -fn 9x15'}
+: VPP=${VPP:=$PWD/install-vpp_lite_debug-native/vpp/bin/vpp}
+: VAT=${VAT:=$PWD/install-vpp_lite_debug-native/vpp-api-test/bin/vpp_api_test}
+
+# Create left host-side af_packet interface
+source $REPO/$1/left-namespace-setup
+
+# Create right host-side af_packet interface
+source $REPO/$1/right-namespace-setup
+
+# vpp
+rm /dev/shm/left-*
+(xterm $XTA -T VPP -n LEFT-VPP \
+      -e "$VPP -c $REPO/shared/left-vpp.cmdline"; ip netns del left ; ip netns del right)&
+
+# Wait for vpp to start
+sleep 1
+
+# configure left vpp (debug CLI)
+echo exec $REPO/$1/left-vpp.cli | nc localhost 5005 &
+
+
+
+
+
+
+
+

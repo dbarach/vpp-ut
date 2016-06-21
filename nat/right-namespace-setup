@@ -1,0 +1,10 @@
+# set up the "right" namespace
+
+ip netns add right
+ip link add fromrightvpp type veth peer name torightvpp
+ip link set torightvpp netns right
+ip netns exec right ip link set lo up
+ip netns exec right ip link set torightvpp up
+ip netns exec right ip addr add 192.168.5.2/24 dev torightvpp
+ip netns exec right route add -net 0.0.0.0/0 gw 192.168.5.1
+ip link set fromrightvpp up
