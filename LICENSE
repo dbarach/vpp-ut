@@ -1,5 +1,3 @@
-#!/bin/bash
-#
 # Copyright (c) 2016 Cisco and/or its affiliates.
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,14 +10,3 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
-# set up the "right" namespace
-
-ip netns add right
-ip link add fromrightvpp type veth peer name torightvpp
-ip link set torightvpp netns right
-ip netns exec right ip link set lo up
-ip netns exec right ip link set torightvpp up
-ip netns exec right ip addr add 192.168.5.2/24 dev torightvpp
-ip netns exec right route add -net 0.0.0.0/0 gw 192.168.5.1
-ip link set fromrightvpp up
